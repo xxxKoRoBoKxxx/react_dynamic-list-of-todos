@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -7,8 +7,47 @@ import { TodoList } from './components/TodoList';
 import { TodoFilter } from './components/TodoFilter';
 import { TodoModal } from './components/TodoModal';
 import { Loader } from './components/Loader';
+import { getTodos } from './api';
+import { Todo } from './types/Todo';
 
 export const App: React.FC = () => {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [todosLoading, setTodosLoading] = useState(false);
+  const [todoModal, setTodoModal] = useState(false);
+
+  const todoRef = useRef<Todo | null>();
+  const closeTodoModalRef =
+    useRef<React.Dispatch<React.SetStateAction<boolean>>>();
+
+  useEffect(() => {
+    setTodosLoading(true);
+
+    getTodos()
+      .then(todosFromServer => setTodos(todosFromServer))
+      .catch(e => {
+        throw new Error(e);
+      })
+      .finally(() => setTodosLoading(false));
+  }, []);
+
+  function showTodoModal(
+    todo: Todo,
+    setButtonPressed: React.Dispatch<React.SetStateAction<boolean>>,
+  ): void {
+    setTodoModal(true);
+
+    todoRef.current = todo;
+    closeTodoModalRef.current = setButtonPressed;
+  }
+
+  function hideTodoModal(): void {
+    setTodoModal(false);
+    todoRef.current = null;
+    if (closeTodoModalRef.current) {
+      closeTodoModalRef.current(false);
+    }
+  }
+
   return (
     <>
       <div className="section">
@@ -21,14 +60,18 @@ export const App: React.FC = () => {
             </div>
 
             <div className="block">
-              <Loader />
-              <TodoList />
+              {todosLoading && <Loader />}
+              {!todosLoading && todos && (
+                <TodoList todos={todos} showTodoModal={showTodoModal} />
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <TodoModal />
+      {todoModal && todoRef.current && (
+        <TodoModal todo={todoRef.current} handleClose={hideTodoModal} />
+      )}
     </>
   );
 };
