@@ -1,4 +1,11 @@
-export const TodoFilter = () => (
+import React from 'react';
+
+type Props = {
+  query: string;
+  setQuery: React.Dispatch<React.SetStateAction<string>>;
+};
+
+export const TodoFilter: React.FC<Props> = ({ query, setQuery }) => (
   <form className="field has-addons">
     <p className="control">
       <span className="select">
@@ -16,6 +23,8 @@ export const TodoFilter = () => (
         type="text"
         className="input"
         placeholder="Search..."
+        value={query}
+        onChange={event => setQuery(event.target.value)}
       />
       <span className="icon is-left">
         <i className="fas fa-magnifying-glass" />

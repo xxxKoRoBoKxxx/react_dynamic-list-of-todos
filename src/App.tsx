@@ -15,6 +15,10 @@ export const App: React.FC = () => {
   const [todosLoading, setTodosLoading] = useState(false);
   const [todoModal, setTodoModal] = useState(false);
 
+  const [query, setQuery] = useState('');
+
+  const firstRender = useRef(true);
+
   const todoRef = useRef<Todo | null>();
   const closeTodoModalRef =
     useRef<React.Dispatch<React.SetStateAction<boolean>>>();
@@ -28,7 +32,21 @@ export const App: React.FC = () => {
         throw new Error(e);
       })
       .finally(() => setTodosLoading(false));
+
+    firstRender.current = false;
   }, []);
+
+  useEffect(() => {
+    if (firstRender.current) {
+      return;
+    }
+
+    if (query) {
+      setTodos(() => {
+        return todos.filter(todo => todo.title.toLowerCase().includes(query));
+      });
+    }
+  }, [query]);
 
   function showTodoModal(
     todo: Todo,
@@ -56,7 +74,7 @@ export const App: React.FC = () => {
             <h1 className="title">Todos:</h1>
 
             <div className="block">
-              <TodoFilter />
+              <TodoFilter query={query} setQuery={setQuery} />
             </div>
 
             <div className="block">
