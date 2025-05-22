@@ -14,20 +14,60 @@ export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [todosLoading, setTodosLoading] = useState(false);
   const [todoModal, setTodoModal] = useState(false);
+  const [inputClearButton, setInputClearButton] = useState(false);
 
   const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('');
 
   const firstRender = useRef(true);
-
+  const allTodos = useRef<Todo[]>([]);
   const todoRef = useRef<Todo | null>();
   const closeTodoModalRef =
     useRef<React.Dispatch<React.SetStateAction<boolean>>>();
 
   useEffect(() => {
+    if (firstRender.current) {
+      return;
+    }
+
+    let allTodosLocal = allTodos.current;
+
+    switch (true) {
+      case category === 'all':
+        allTodosLocal = allTodos.current;
+        break;
+      case category === 'active':
+        allTodosLocal = allTodosLocal.filter(todo => !todo.completed);
+        break;
+      case category === 'completed':
+        allTodosLocal = allTodosLocal.filter(todo => todo.completed);
+        break;
+      default:
+        break;
+    }
+
+    if (query) {
+      setTodos(() => {
+        return allTodosLocal.filter(todo =>
+          todo.title.toLowerCase().includes(query),
+        );
+      });
+
+      setInputClearButton(true);
+    } else {
+      setTodos(allTodosLocal);
+      setInputClearButton(false);
+    }
+  }, [query, category]);
+
+  useEffect(() => {
     setTodosLoading(true);
 
     getTodos()
-      .then(todosFromServer => setTodos(todosFromServer))
+      .then(todosFromServer => {
+        allTodos.current = todosFromServer;
+        setTodos(todosFromServer);
+      })
       .catch(e => {
         throw new Error(e);
       })
@@ -35,18 +75,6 @@ export const App: React.FC = () => {
 
     firstRender.current = false;
   }, []);
-
-  useEffect(() => {
-    if (firstRender.current) {
-      return;
-    }
-
-    if (query) {
-      setTodos(() => {
-        return todos.filter(todo => todo.title.toLowerCase().includes(query));
-      });
-    }
-  }, [query]);
 
   function showTodoModal(
     todo: Todo,
@@ -66,6 +94,11 @@ export const App: React.FC = () => {
     }
   }
 
+  function handleInputClear(): void {
+    setQuery('');
+    setInputClearButton(false);
+  }
+
   return (
     <>
       <div className="section">
@@ -74,7 +107,13 @@ export const App: React.FC = () => {
             <h1 className="title">Todos:</h1>
 
             <div className="block">
-              <TodoFilter query={query} setQuery={setQuery} />
+              <TodoFilter
+                query={query}
+                showClearButton={inputClearButton}
+                setQuery={setQuery}
+                setCategory={setCategory}
+                clearInput={handleInputClear}
+              />
             </div>
 
             <div className="block">

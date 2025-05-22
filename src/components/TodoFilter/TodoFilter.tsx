@@ -2,14 +2,26 @@ import React from 'react';
 
 type Props = {
   query: string;
+  showClearButton: boolean;
   setQuery: React.Dispatch<React.SetStateAction<string>>;
+  setCategory: React.Dispatch<React.SetStateAction<string>>;
+  clearInput: () => void;
 };
 
-export const TodoFilter: React.FC<Props> = ({ query, setQuery }) => (
+export const TodoFilter: React.FC<Props> = ({
+  query,
+  showClearButton,
+  setQuery,
+  setCategory,
+  clearInput,
+}) => (
   <form className="field has-addons">
     <p className="control">
       <span className="select">
-        <select data-cy="statusSelect">
+        <select
+          data-cy="statusSelect"
+          onChange={event => setCategory(event.target.value)}
+        >
           <option value="all">All</option>
           <option value="active">Active</option>
           <option value="completed">Completed</option>
@@ -30,10 +42,17 @@ export const TodoFilter: React.FC<Props> = ({ query, setQuery }) => (
         <i className="fas fa-magnifying-glass" />
       </span>
 
-      <span className="icon is-right" style={{ pointerEvents: 'all' }}>
-        {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-        <button data-cy="clearSearchButton" type="button" className="delete" />
-      </span>
+      {showClearButton && (
+        <span className="icon is-right" style={{ pointerEvents: 'all' }}>
+          {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+          <button
+            data-cy="clearSearchButton"
+            type="button"
+            className="delete"
+            onClick={clearInput}
+          />
+        </span>
+      )}
     </p>
   </form>
 );
