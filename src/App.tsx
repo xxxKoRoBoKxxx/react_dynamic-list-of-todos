@@ -17,7 +17,7 @@ export const App: React.FC = () => {
   const [inputClearButton, setInputClearButton] = useState(false);
 
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('all');
 
   const firstRender = useRef(true);
   const allTodos = useRef<Todo[]>([]);
@@ -49,7 +49,7 @@ export const App: React.FC = () => {
     if (query) {
       setTodos(() => {
         return allTodosLocal.filter(todo =>
-          todo.title.toLowerCase().includes(query),
+          todo.title.toLowerCase().includes(query.toLowerCase()),
         );
       });
 
